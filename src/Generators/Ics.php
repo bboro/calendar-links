@@ -112,7 +112,7 @@ class Ics implements Generator
         $transitions = $timeZone->getTransitions($from - $year, $to + $year);
 
         $vTimeZone = $vcalendar->createComponent('VTIMEZONE');
-        $vTimeZone->TZID = $timeZone->getName();
+        $vTimeZone->add('TZID', $timeZone->getName());
 
         $std = null;
         $dst = null;
@@ -122,6 +122,7 @@ class Ics implements Generator
             if ($i === 0) {
                 // remember the offset for the next TZOFFSETFROM value
                 $tzfrom = $trans['offset'] / 3600;
+                continue;
             }
 
             // daylight saving time definition
@@ -136,24 +137,20 @@ class Ics implements Generator
                 $component = $std;
             }
 
-            if ($component) {
-                $dt = new \DateTime($trans['time']);
-                $offset = $trans['offset'] / 3600;
+            $dt = new \DateTime($trans['time']);
+            $offset = $trans['offset'] / 3600;
 
-                $component->DTSTART = $dt->format('Ymd\THis');
-                $component->TZOFFSETFROM = sprintf('%s%02d%02d', $tzfrom >= 0 ? '+' : '', floor($tzfrom),
-                    ($tzfrom - floor($tzfrom)) * 60);
-                $component->TZOFFSETTO = sprintf('%s%02d%02d', $offset >= 0 ? '+' : '', floor($offset),
-                    ($offset - floor($offset)) * 60);
+            $component->add('DTSTART', $dt->format('Ymd\THis'));
+            $component->add('TZOFFSETFROM', sprintf('%s%02d%02d', $tzfrom >= 0 ? '+' : '', floor($tzfrom),
+                ($tzfrom - floor($tzfrom)) * 60));
+            $component->add('TZOFFSETTO', sprintf('%s%02d%02d', $offset >= 0 ? '+' : '', floor($offset),
+                ($offset - floor($offset)) * 60));
 
-                // add abbreviated timezone name if available
-                if (! empty($trans['abbr'])) {
-                    $component->TZNAME = $trans['abbr'];
-                }
+            // add abbreviated timezone name.
+            $component->add('TZNAME', $trans['abbr']);
 
-                $tzfrom = $offset;
-                $vTimeZone->add($component);
-            }
+            $tzfrom = $offset;
+            $vTimeZone->add($component);
 
             // we covered the entire date range
             if ($std && $dst && min($t_std, $t_dst) < $from && max($t_std, $t_dst) > $to) {
