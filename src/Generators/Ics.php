@@ -2,10 +2,10 @@
 
 namespace Spatie\CalendarLinks\Generators;
 
+use Spatie\CalendarLinks\Generator;
 use Sabre\VObject\Component;
 use Spatie\CalendarLinks\Link;
 use Sabre\VObject\TimeZoneUtil;
-use Spatie\CalendarLinks\Generator;
 use Sabre\VObject\Component\VCalendar;
 
 /**
@@ -13,6 +13,17 @@ use Sabre\VObject\Component\VCalendar;
  */
 class Ics implements Generator
 {
+    /** @var string {@see https://www.php.net/manual/en/function.date.php} */
+    protected $dateFormat = 'Ymd';
+    protected $dateTimeFormat = 'e:Ymd\THis';
+
+    /** @var array */
+    protected $options = [];
+
+    public function __construct(array $options = [])
+    {
+        $this->options = $options;
+    }
     public function generate(Link $link): string
     {
         $timeZones = [];
@@ -37,11 +48,15 @@ class Ics implements Generator
         }
 
         if ($link->description) {
-            $vevent->add('DESCRIPTION', $link->description);
+            $vevent->add('DESCRIPTION', $this->escapeString($link->description));
         }
 
         if ($link->address) {
-            $vevent->add('LOCATION', $link->address);
+            $vevent->add('LOCATION', $this->escapeString($link->address));
+        }
+
+        if (isset($this->options['URL'])) {
+            $vevent->add('URL', 'URI:'.$this->options['URL']);
         }
 
         $this->addVTimezoneComponents($vcalendar, $timeZones, $link->from, $link->to);
@@ -50,9 +65,7 @@ class Ics implements Generator
         $vcalendar->remove('PRODID');
         $vevent->remove('DTSTAMP');
 
-        $redirectLink = str_replace("\r\n", '%0d%0a', $vcalendar->serialize());
-
-        return 'data:text/calendar;charset=utf8,'.$redirectLink;
+        return 'data:text/calendar;charset=utf8;base64,'.base64_encode($vcalendar->serialize());
     }
 
     /** @see https://tools.ietf.org/html/rfc5545.html#section-3.3.11 */
@@ -64,10 +77,16 @@ class Ics implements Generator
     /** @see https://tools.ietf.org/html/rfc5545#section-3.8.4.7 */
     protected function generateEventUid(Link $link): string
     {
-        return md5($link->from->format(\DateTime::ATOM).$link->to->format(\DateTime::ATOM).$link->title.$link->address);
+        return md5(sprintf(
+            '%s%s%s%s',
+            $link->from->format(\DateTimeInterface::ATOM),
+            $link->to->format(\DateTimeInterface::ATOM),
+            $link->title,
+            $link->address
+        ));
     }
 
-    protected function addVTimezoneComponents(VCalendar $vcalendar, array $timeZones, \DateTime $from, \DateTime $to)
+    protected function addVTimezoneComponents(VCalendar $vcalendar, array $timeZones, \DateTimeInterface $from, \DateTimeInterface $to)
     {
         foreach ($timeZones as $timeZone) {
             /* @var \DateTimeZone $timeZone */

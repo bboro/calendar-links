@@ -1,24 +1,36 @@
 <?php
 
-namespace Spatie\CalendarLink\Test;
+namespace Spatie\CalendarLinks\Tests\Generators;
 
-use Spatie\CalendarLinks\Test\TestCase;
+use Spatie\CalendarLinks\Generator;
+use Spatie\CalendarLinks\Generators\Ics;
+use Spatie\CalendarLinks\Tests\TestCase;
 
 class IcsGeneratorTest extends TestCase
 {
-    /** @test */
-    public function it_can_generate_an_ics_link()
+    use GeneratorTestContract;
+
+    protected function generator(): Generator
     {
-        $this->assertMatchesSnapshot(
-            $this->createLink()->ics()
-        );
+        // extend base class just to make output more readable and simplify reviewing of the snapshot diff
+        return new class extends Ics {
+            protected function buildLink(array $propertiesAndComponents): string
+            {
+                return implode("\r\n", $propertiesAndComponents);
+            }
+        };
+    }
+
+    protected function linkMethodName(): string
+    {
+        return 'ics';
     }
 
     /** @test */
-    public function it_can_generate_an_ics_allDay_link()
+    public function it_can_generate_an_ics_link_with_custom_uid()
     {
         $this->assertMatchesSnapshot(
-            $this->createAlldayLink()->ics()
+            $this->createShortEventLink()->ics(['UID' => 'random-uid'])
         );
     }
 

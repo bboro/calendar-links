@@ -1,24 +1,22 @@
 <?php
 
-namespace Spatie\CalendarLink\Test;
+namespace Spatie\CalendarLinks\Tests\Generators;
 
-use Spatie\CalendarLinks\Test\TestCase;
+use Spatie\CalendarLinks\Generator;
+use Spatie\CalendarLinks\Generators\WebOutlook;
+use Spatie\CalendarLinks\Tests\TestCase;
 
 class WebOutlookGeneratorTest extends TestCase
 {
-    /** @test */
-    public function it_can_generate_a_web_outlook_link()
+    use GeneratorTestContract;
+
+    protected function generator(): Generator
     {
-        $this->assertMatchesSnapshot(
-            $this->createLink()->webOutlook()
-        );
+        return new WebOutlook();
     }
 
-    /** @test */
-    public function it_can_generate_a_web_outlook_allDay_link()
+    protected function linkMethodName(): string
     {
-        $this->assertMatchesSnapshot(
-            $this->createAlldayLink()->webOutlook()
-        );
+        return 'webOutlook';
     }
 }
