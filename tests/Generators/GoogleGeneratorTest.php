@@ -1,24 +1,22 @@
 <?php
 
-namespace Spatie\CalendarLink\Test;
+namespace Spatie\CalendarLinks\Tests\Generators;
 
-use Spatie\CalendarLinks\Test\TestCase;
+use Spatie\CalendarLinks\Generator;
+use Spatie\CalendarLinks\Generators\Google;
+use Spatie\CalendarLinks\Tests\TestCase;
 
 class GoogleGeneratorTest extends TestCase
 {
-    /** @test */
-    public function it_can_generate_a_google_link()
+    use GeneratorTestContract;
+
+    protected function generator(): Generator
     {
-        $this->assertMatchesSnapshot(
-            $this->createLink()->google()
-        );
+        return new Google();
     }
 
-    /** @test */
-    public function it_can_generate_a_google_allDay_link()
+    protected function linkMethodName(): string
     {
-        $this->assertMatchesSnapshot(
-            $this->createAlldayLink()->google()
-        );
+        return 'google';
     }
 }
