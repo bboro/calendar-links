@@ -1,9 +1,14 @@
+
+[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/support-ukraine.svg?t=1" />](https://supportukrainenow.org)
+
 # Generate add to calendar links for Google, iCal and other calendar systems
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/spatie/calendar-links.svg?style=flat-square)](https://packagist.org/packages/spatie/calendar-links)
 [![Total Downloads](https://img.shields.io/packagist/dt/spatie/calendar-links.svg?style=flat-square)](https://packagist.org/packages/spatie/calendar-links)
-![Test](https://github.com/spatie/calendar-links/workflows/Test/badge.svg)
+[![Test](https://github.com/spatie/calendar-links/workflows/Test/badge.svg)](https://github.com/spatie/calendar-links/actions/workflows/run-tests.yml)
 [![Quality Score](https://img.shields.io/scrutinizer/g/spatie/calendar-links.svg?style=flat-square)](https://scrutinizer-ci.com/g/spatie/calendar-links)
+[![Type coverage](https://shepherd.dev/github/spatie/calendar-links/coverage.svg)](https://shepherd.dev/github/spatie/calendar-links)
+[![Psalm level](https://shepherd.dev/github/spatie/calendar-links/level.svg)](https://shepherd.dev/github/spatie/calendar-links)
 
 
 Using this package you can generate links to add events to calendar systems. Here's a quick example:
@@ -59,8 +64,11 @@ echo $link->google();
 // Generate a link to create an event on Yahoo calendar
 echo $link->yahoo();
 
-// Generate a link to create an event on outlook.com calendar
+// Generate a link to create an event on outlook.live.com calendar
 echo $link->webOutlook();
+
+// Generate a link to create an event on outlook.office.com calendar
+echo $link->webOffice();
 
 // Generate a data uri for an ics file (for iCal & Outlook)
 echo $link->ics();
@@ -73,7 +81,7 @@ echo $link->formatWith(new \Your\Generator());
 
 ## Package principles
 
-1. it should produce a small output (too keep pagesize small)
+1. it should produce a small output (to keep pagesize small)
 2. it should be fast (no any external heavy dependencies)
 3. all features should be supported by at least 2 generators (different services have different features)
 
@@ -89,11 +97,11 @@ composer test
 
 ## Contributing
 
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
+Please see [CONTRIBUTING](https://github.com/spatie/.github/blob/main/CONTRIBUTING.md) for details.
 
 ## Security
 
-If you discover any security related issues, please email freek@spatie.be instead of using the issue tracker.
+If you've found a bug regarding security please mail [security@spatie.be](mailto:security@spatie.be) instead of using the issue tracker.
 
 ## Postcardware
 

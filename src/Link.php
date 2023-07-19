@@ -5,6 +5,7 @@ namespace Spatie\CalendarLinks;
 use Spatie\CalendarLinks\Exceptions\InvalidLink;
 use Spatie\CalendarLinks\Generators\Google;
 use Spatie\CalendarLinks\Generators\Ics;
+use Spatie\CalendarLinks\Generators\WebOffice;
 use Spatie\CalendarLinks\Generators\WebOutlook;
 use Spatie\CalendarLinks\Generators\Yahoo;
 
@@ -41,7 +42,7 @@ class Link
         $this->title = $title;
         $this->allDay = $allDay;
 
-        if ($to < $from) {
+        if ($from > $to) {
             throw InvalidLink::negativeDateRange($from, $to);
         }
 
@@ -113,6 +114,10 @@ class Link
         return $this->formatWith(new Google());
     }
 
+    /**
+     * @param array<non-empty-string, non-empty-string> $options
+     * @return string
+     */
     public function ics(array $options = []): string
     {
         return $this->formatWith(new Ics($options));
@@ -126,6 +131,11 @@ class Link
     public function webOutlook(): string
     {
         return $this->formatWith(new WebOutlook());
+    }
+
+    public function webOffice(): string
+    {
+        return $this->formatWith(new WebOffice());
     }
 
     public function __get($property)

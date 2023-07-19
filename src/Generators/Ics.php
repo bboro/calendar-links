@@ -15,15 +15,21 @@ class Ics implements Generator
 {
     /** @var string {@see https://www.php.net/manual/en/function.date.php} */
     protected $dateFormat = 'Ymd';
-    protected $dateTimeFormat = 'e:Ymd\THis';
+    /** @var string */
+    protected $dateTimeFormat = 'Ymd\THis\Z';
 
-    /** @var array */
+    /** @var array<non-empty-string, non-empty-string> */
     protected $options = [];
 
+    /**
+     * @param array<non-empty-string, non-empty-string> $options
+     */
     public function __construct(array $options = [])
     {
         $this->options = $options;
     }
+
+    /** {@inheritDoc} */
     public function generate(Link $link): string
     {
         $timeZones = [];
@@ -33,17 +39,17 @@ class Ics implements Generator
             'UID' => $this->generateEventUid($link),
             'SUMMARY' => $link->title,
         ]);
-        $vcalendar->add($vevent);
+
+        $dateTimeFormat = $link->allDay ? $this->dateFormat : $this->dateTimeFormat;
+
+        $vevent->add('DTSTAMP', $link->from->format($dateTimeFormat));
+        $vevent->add('DTSTART', $link->from->format($dateTimeFormat));
+        $timeZones[$link->from->getTimezone()->getName()] = $link->from->getTimezone();
 
         if ($link->allDay) {
-            $vevent->add('DTSTART', $link->from);
-            $vevent->add('DURATION:P1D');
-            $timeZones[$link->from->getTimezone()->getName()] = $link->from->getTimezone();
+            $vevent->add('DURATION', 'P'.(max(1, $link->from->diff($link->to)->days)).'D');
         } else {
-            $vevent->add('DTSTART', $link->from);
-            $timeZones[$link->from->getTimezone()->getName()] = $link->from->getTimezone();
-
-            $vevent->add('DTEND', $link->to);
+            $vevent->add('DTEND', $link->to->format($dateTimeFormat));
             $timeZones[$link->to->getTimezone()->getName()] = $link->to->getTimezone();
         }
 
@@ -56,16 +62,18 @@ class Ics implements Generator
         }
 
         if (isset($this->options['URL'])) {
-            $vevent->add('URL', 'URI:'.$this->options['URL']);
+            $vevent->add('URL;VALUE=URI', $this->options['URL']);
         }
 
         $this->addVTimezoneComponents($vcalendar, $timeZones, $link->from, $link->to);
 
-        // Remove non-wanted component
-        $vcalendar->remove('PRODID');
-        $vevent->remove('DTSTAMP');
+        $vcalendar->add($vevent);
+        return $this->buildLink($vcalendar->serialize());
+    }
 
-        return 'data:text/calendar;charset=utf8;base64,'.base64_encode($vcalendar->serialize());
+    protected function buildLink(array $propertiesAndComponents): string
+    {
+        return 'data:text/calendar;charset=utf8;base64,'.base64_encode(implode("\r\n", $propertiesAndComponents));
     }
 
     /** @see https://tools.ietf.org/html/rfc5545.html#section-3.3.11 */
