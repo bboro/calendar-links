@@ -2,11 +2,11 @@
 
 namespace Spatie\CalendarLinks\Generators;
 
-use Spatie\CalendarLinks\Generator;
 use Sabre\VObject\Component;
-use Spatie\CalendarLinks\Link;
-use Sabre\VObject\TimeZoneUtil;
 use Sabre\VObject\Component\VCalendar;
+use Sabre\VObject\TimeZoneUtil;
+use Spatie\CalendarLinks\Generator;
+use Spatie\CalendarLinks\Link;
 
 /**
  * @see https://icalendar.org/RFC-Specifications/iCalendar-RFC-5545/
@@ -68,6 +68,7 @@ class Ics implements Generator
         $this->addVTimezoneComponents($vcalendar, $timeZones, $link->from, $link->to);
 
         $vcalendar->add($vevent);
+
         return $this->buildLink($vcalendar->serialize());
     }
 
@@ -149,6 +150,7 @@ class Ics implements Generator
             if ($i === 0) {
                 // remember the offset for the next TZOFFSETFROM value
                 $tzfrom = $trans['offset'] / 3600;
+
                 continue;
             }
 
@@ -168,10 +170,18 @@ class Ics implements Generator
             $offset = $trans['offset'] / 3600;
 
             $component->add('DTSTART', $dt->format('Ymd\THis'));
-            $component->add('TZOFFSETFROM', sprintf('%s%02d%02d', $tzfrom >= 0 ? '+' : '', floor($tzfrom),
-                ($tzfrom - floor($tzfrom)) * 60));
-            $component->add('TZOFFSETTO', sprintf('%s%02d%02d', $offset >= 0 ? '+' : '', floor($offset),
-                ($offset - floor($offset)) * 60));
+            $component->add('TZOFFSETFROM', sprintf(
+                '%s%02d%02d',
+                $tzfrom >= 0 ? '+' : '',
+                floor($tzfrom),
+                ($tzfrom - floor($tzfrom)) * 60
+            ));
+            $component->add('TZOFFSETTO', sprintf(
+                '%s%02d%02d',
+                $offset >= 0 ? '+' : '',
+                floor($offset),
+                ($offset - floor($offset)) * 60
+            ));
 
             // add abbreviated timezone name.
             $component->add('TZNAME', $trans['abbr']);
